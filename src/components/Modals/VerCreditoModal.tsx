@@ -289,14 +289,6 @@ export default function VerCreditoModal({
 
                 {/* Botones de acción */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
-                    {selectedCredito.estado === 'pendiente' && (
-                        <Button
-                            type="button"
-                            className="bg-green-600 hover:bg-green-700"
-                        >
-                            Registrar Pago
-                        </Button>
-                    )}
                     <Button type="button" onClick={onClose}>
                         Cerrar
                     </Button>

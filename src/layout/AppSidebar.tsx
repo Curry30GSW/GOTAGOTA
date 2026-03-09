@@ -8,6 +8,7 @@ import {
   ChevronDownIcon,
   HorizontaLDots,
   UserCircleIcon,
+  GroupIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -34,6 +35,12 @@ const navItems: NavItem[] = [
     icon: <DollarLineIcon />,
     name: "Creditos",
     path: "/creditos",
+  },
+
+  {
+    icon: <GroupIcon />,
+    name: "Historial Cobradores",
+    path: "/historial-cobradores",
   },
 ];
 

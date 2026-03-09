@@ -10,8 +10,10 @@ import { Cobrador } from '../../types/cobrador';
 // Importar componentes
 import CrearCreditoModal from '../../components/Modals/CrearCreditoModal';
 import VerCreditoModal from '../../components/Modals/VerCreditoModal';
+import ConfirmPagoModal from '../../components/Modals/ConfirmPagoModal';
 import FiltrosCreditos from '../../components/filtros/FiltrosCreditos';
 import Paginacion from '../../components/Paginacion/Paginacion';
+import CreditoCard from '../../pages/Creditos/CreditoCard';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 const ITEMS_PER_PAGE = 10;
@@ -22,6 +24,10 @@ export default function Creditos() {
     const [cobradores, setCobradores] = useState<Cobrador[]>([]);
     const [loading, setLoading] = useState(true);
 
+    // NUEVOS ESTADOS PARA EL PAGO
+    const [creditoAPagar, setCreditoAPagar] = useState<Credito | null>(null);
+    const [showPagoConfirm, setShowPagoConfirm] = useState(false);
+    const [isPaying, setIsPaying] = useState(false);
 
     // Estados para filtros
     const [filtros, setFiltros] = useState<FiltrosCreditoState>({
@@ -72,6 +78,56 @@ export default function Creditos() {
 
     // Form errors
     const [formErrors, setFormErrors] = useState<Partial<CreditoFormData>>({});
+
+    // NUEVAS FUNCIONES PARA EL PAGO
+    const handlePagarCredito = (credito: Credito, e: React.MouseEvent) => {
+        e.stopPropagation(); // Evitar que se abra el modal de detalles
+        setCreditoAPagar(credito);
+        setShowPagoConfirm(true);
+    };
+
+    const confirmarPago = async () => {
+        if (!creditoAPagar) return;
+
+        setIsPaying(true);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/creditos/pagar/${creditoAPagar.id_credito}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al pagar el crédito');
+            }
+
+            if (data.ok) {
+                // Cerrar el diálogo de confirmación
+                setShowPagoConfirm(false);
+                setCreditoAPagar(null);
+
+                // Mostrar mensaje de éxito
+                mostrarExito('Crédito pagado exitosamente');
+
+                // Actualizar la lista de créditos
+                fetchCreditos();
+            }
+        } catch (error: any) {
+            console.error('Error al pagar crédito:', error);
+            mostrarError(error.message || 'Error al pagar el crédito');
+        } finally {
+            setIsPaying(false);
+        }
+    };
+
+    const cancelarPago = () => {
+        setShowPagoConfirm(false);
+        setCreditoAPagar(null);
+    };
 
     // Funciones de SweetAlert
     const mostrarExito = (mensaje: string) => {
@@ -457,13 +513,14 @@ export default function Creditos() {
         }
     };
 
-    const formatCurrency = (amount: number) => {
+    const formatCurrency = (amount: number | string) => {
+        const valor = typeof amount === 'string' ? parseFloat(amount) : amount;
         return new Intl.NumberFormat('es-CO', {
             style: 'currency',
             currency: 'COP',
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
-        }).format(amount);
+        }).format(valor);
     };
 
     const getEstadoStyles = (estado: string) => {
@@ -520,8 +577,38 @@ export default function Creditos() {
                     onLimpiarFiltros={handleLimpiarFiltros}
                 />
 
-                {/* Tabla de créditos */}
-                <div className="overflow-x-auto">
+                {/* Vista de Tarjetas - SOLO para móvil (oculto en desktop) */}
+                <div className="block lg:hidden">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {loading ? (
+                            <div className="col-span-full flex justify-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                            </div>
+                        ) : datosPaginados.length === 0 ? (
+                            <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cliente !== 'todos' || filtros.fechaInicio
+                                    ? 'No se encontraron resultados con los filtros aplicados'
+                                    : 'No hay créditos registrados'}
+                            </div>
+                        ) : (
+                            datosPaginados.map((credito) => (
+                                <CreditoCard
+                                    key={credito.id_credito}
+                                    credito={credito}
+                                    onVer={handleOpenViewModal}
+                                    onPagar={handlePagarCredito}
+                                    formatCurrency={formatCurrency}
+                                    formatDate={formatDate}
+                                    getEstadoStyles={getEstadoStyles}
+                                    getEstadoLabel={getEstadoLabel}
+                                />
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Vista de Tabla - SOLO para desktop (oculto en móvil) */}
+                <div className="hidden lg:block overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -540,90 +627,121 @@ export default function Creditos() {
                                 </TableHeader>
 
                                 <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
-                                    {creditos.map((credito) => {
-                                        const montoPrestado = typeof credito.monto_prestado === 'string'
-                                            ? parseFloat(credito.monto_prestado)
-                                            : credito.monto_prestado;
+                                    {loading ? (
+                                        <TableRow>
+                                            <TableCell colSpan={9} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+                                                <div className="flex justify-center">
+                                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                                                </div>
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : datosPaginados.length === 0 ? (
+                                        <TableRow>
+                                            <TableCell colSpan={9} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+                                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cliente !== 'todos' || filtros.fechaInicio
+                                                    ? 'No se encontraron resultados con los filtros aplicados'
+                                                    : 'No hay créditos registrados'}
+                                            </TableCell>
+                                        </TableRow>
+                                    ) : (
+                                        datosPaginados.map((credito) => {
+                                            const montoPrestado = typeof credito.monto_prestado === 'string'
+                                                ? parseFloat(credito.monto_prestado)
+                                                : credito.monto_prestado;
 
-                                        const montoPorPagar = typeof credito.monto_por_pagar === 'string'
-                                            ? parseFloat(credito.monto_por_pagar)
-                                            : credito.monto_por_pagar;
+                                            const montoPorPagar = typeof credito.monto_por_pagar === 'string'
+                                                ? parseFloat(credito.monto_por_pagar)
+                                                : credito.monto_por_pagar;
 
-                                        return (
-                                            <TableRow key={credito.id_credito}>
-                                                <TableCell className="px-5 py-4">
-                                                    #{credito.id_credito}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4">
-                                                    <div>
-                                                        <p className="font-medium text-gray-800 whitespace-nowrap dark:text-white">
-                                                            {credito.cliente_nombre} {credito.cliente_apellidos}
+                                            return (
+                                                <TableRow key={credito.id_credito}>
+                                                    <TableCell className="px-5 py-4">
+                                                        #{credito.id_credito}
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4">
+                                                        <div>
+                                                            <p className="font-medium text-gray-800 whitespace-nowrap dark:text-white">
+                                                                {credito.cliente_nombre} {credito.cliente_apellidos}
+                                                            </p>
+                                                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                                                C.C. {credito.cedula}
+                                                            </p>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4">
+                                                        <div>
+                                                            <p className="font-medium whitespace-nowrap text-gray-800 dark:text-white">
+                                                                {credito.cobrador_nombre} {credito.cobrador_apellidos}
+                                                            </p>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4">
+                                                        <p className="font-medium text-gray-800 dark:text-white">
+                                                            {formatCurrency(montoPrestado)}
                                                         </p>
-                                                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                            C.C. {credito.cedula}
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4">
+                                                        <p className="text-blue-600 text-center dark:text-blue-400 font-medium">
+                                                            {formatCurrency(montoPorPagar)}
                                                         </p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4">
-                                                    <div>
-                                                        <p className="font-medium whitespace-nowrap text-gray-800 dark:text-white">
-                                                            {credito.cobrador_nombre} {credito.cobrador_apellidos}
-                                                        </p>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4">
-                                                    <p className="font-medium text-gray-800 dark:text-white">
-                                                        {formatCurrency(montoPrestado)}
-                                                    </p>
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4">
-                                                    <p className="text-blue-600 text-center dark:text-blue-400 font-medium">
-                                                        {formatCurrency(montoPorPagar)}
-                                                    </p>
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-center dark:text-white">
-                                                    {formatDate(credito.fecha_credito)}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-center dark:text-white">
-                                                    {formatDate(credito.fecha_pago)}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4">
-                                                    <span className={`px-3 py-1 rounded-full text-md font-medium ${getEstadoStyles(credito.estado)}`}>
-                                                        {getEstadoLabel(credito.estado)}
-                                                    </span>
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-center align-middle">
-                                                    <div className="flex justify-center items-center">
-                                                        <button
-                                                            onClick={() => handleOpenViewModal(credito)}
-                                                            className="rounded-lg border border-gray-300 bg-white p-1.5 text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-300 transition-colors"
-                                                            title="Ver detalles"
-                                                        >
-                                                            <svg
-                                                                className="h-4 w-4"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                viewBox="0 0 24 24"
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 text-center dark:text-white">
+                                                        {formatDate(credito.fecha_credito)}
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 text-center dark:text-white">
+                                                        {formatDate(credito.fecha_pago)}
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4">
+                                                        <span className={`px-3 py-1 rounded-full text-md font-medium ${getEstadoStyles(credito.estado)}`}>
+                                                            {getEstadoLabel(credito.estado)}
+                                                        </span>
+                                                    </TableCell>
+                                                    <TableCell className="px-5 py-4 text-center align-middle">
+                                                        <div className="flex justify-center items-center gap-2">
+                                                            <button
+                                                                onClick={() => handleOpenViewModal(credito)}
+                                                                className="rounded-lg border border-gray-300 bg-white p-1.5 text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-300 transition-colors"
+                                                                title="Ver detalles"
                                                             >
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth="2"
-                                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                                />
-                                                                <path
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                    strokeWidth="2"
-                                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5 c4.477 0 8.268 2.943 9.542 7 -1.274 4.057-5.065 7-9.542 7 -4.477 0-8.268-2.943-9.542-7z"
-                                                                />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
+                                                                <svg
+                                                                    className="h-4 w-4"
+                                                                    fill="none"
+                                                                    stroke="currentColor"
+                                                                    viewBox="0 0 24 24"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                    />
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth="2"
+                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7 -1.274 4.057-5.065 7-9.542 7 -4.477 0-8.268-2.943-9.542-7z"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+
+                                                            {/* NUEVO BOTÓN DE PAGAR - Solo para créditos pendientes */}
+                                                            {credito.estado === 'pendiente' && (
+                                                                <button
+                                                                    onClick={(e) => handlePagarCredito(credito, e)}
+                                                                    className="rounded-lg border border-green-300 bg-green-50 p-1.5 text-green-700 hover:bg-green-100 hover:text-green-800 dark:border-green-700 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40 transition-colors"
+                                                                    title="Pagar crédito"
+                                                                >
+                                                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        })
+                                    )}
                                 </TableBody>
                             </Table>
                         </div>
@@ -661,6 +779,16 @@ export default function Creditos() {
                 onClose={() => setIsViewModalOpen(false)}
                 selectedCredito={selectedCredito}
                 nombreCliente={selectedCredito ? getNombreCliente(selectedCredito) : ''}
+                nombreCobrador={selectedCredito ? `${selectedCredito.cobrador_nombre} ${selectedCredito.cobrador_apellidos}` : ''}
+            />
+
+            <ConfirmPagoModal
+                isOpen={showPagoConfirm}
+                onClose={cancelarPago}
+                credito={creditoAPagar}
+                onConfirm={confirmarPago}
+                isPaying={isPaying}
+                formatCurrency={formatCurrency}
             />
         </>
     );

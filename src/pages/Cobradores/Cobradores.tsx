@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import PageMeta from '../../components/common/PageMeta';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../components/ui/table';
 import Button from '../../components/ui/button/Button';
-import { EyeIcon, PencilIcon, TrashBinIcon } from '../../icons';
+import { PencilIcon, TrashBinIcon } from '../../icons';
 import { Cobrador, CobradorFormData, FiltrosCobradorState } from '../../types/cobrador';
 
 // Importar componentes
@@ -13,6 +13,7 @@ import VerCobradorModal from '../../components/Modals/VerCobradorModal';
 import EliminarCobradorModal from '../../components/Modals/EliminarCobradorModal';
 import FiltrosCobradores from '../../components/Filtros/FiltrosCobradores';
 import Paginacion from '../../components/Paginacion/Paginacion';
+import CobradorCard from '../../pages/Cobradores/CobradorCard';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 const ITEMS_PER_PAGE = 10;
@@ -110,10 +111,9 @@ export default function Cobradores() {
             title: '¿Estás seguro?',
             html: `
                 <div class="text-left">
-                    <p class="mb-2">Estás a punto de eliminar al cobrador:</p>
+                    <p class="mb-2">Estás a punto de desactivar al cobrador:</p>
                     <p class="font-bold text-red-600">${cobrador.nombre} ${cobrador.apellidos}</p>
                     <p class="text-sm text-gray-500 mt-2">Cédula: ${cobrador.cedula}</p>
-                    <p class="text-sm text-red-500 mt-4">¡Esta acción no se puede deshacer!</p>
                 </div>
             `,
             icon: 'warning',
@@ -424,6 +424,29 @@ export default function Cobradores() {
         }
     };
 
+    const handleReactivarCobrador = async (cobrador: Cobrador) => {
+        try {
+            const response = await fetch(
+                `${API_BASE_URL}/cobradores/${cobrador.id_cobrador}/reactivar`,
+                {
+                    method: 'PATCH',
+                }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Error al reactivar cobrador');
+            }
+
+            mostrarExito('Cobrador reactivado exitosamente');
+            fetchCobradores();
+
+        } catch (err) {
+            mostrarError(err instanceof Error ? err.message : 'Error al reactivar cobrador');
+        }
+    };
+
     return (
         <>
             <PageMeta
@@ -442,25 +465,18 @@ export default function Cobradores() {
                             Gestiona los cobradores del sistema
                         </p>
                     </div>
-                    <Button
-                        onClick={handleOpenCreateModal}
-                        className=" inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-100 px-4 py-2.5 text-sm font-medium text-blue-700 shadow-theme-xs transition-colors hover:bg-blue-200 hover:text-blue-800 dark:border-blue-500 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                    >
-                        <svg
-                            className="h-4 w-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
+
+                    <div className="flex items-center gap-3">
+                        <Button
+                            onClick={handleOpenCreateModal}
+                            className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-100 px-4 py-2.5 text-sm font-medium text-blue-700 shadow-theme-xs transition-colors hover:bg-blue-200 hover:text-blue-800 dark:border-blue-500 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M12 4v16m8-8H4"
-                            />
-                        </svg>
-                        Nuevo Cobrador
-                    </Button>
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Nuevo Cobrador
+                        </Button>
+                    </div>
                 </div>
 
                 {/* Filtros */}
@@ -471,90 +487,108 @@ export default function Cobradores() {
                     onLimpiarFiltros={handleLimpiarFiltros}
                 />
 
-                {/* Tabla de cobradores */}
-                <div className="overflow-x-auto">
+                {/* Vista de Tarjetas - SOLO para móvil (oculto en desktop) */}
+                <div className="block lg:hidden">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {loading ? (
+                            <div className="col-span-full flex justify-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                            </div>
+                        ) : datosPaginados.length === 0 ? (
+                            <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                                {filtros.search || filtros.estado !== 'todos' || filtros.fechaRegistroInicio
+                                    ? 'No se encontraron resultados con los filtros aplicados'
+                                    : 'No hay cobradores registrados'}
+                            </div>
+                        ) : (
+                            datosPaginados.map((cobrador) => (
+                                <CobradorCard
+                                    key={cobrador.id_cobrador}
+                                    cobrador={cobrador}
+                                    onVer={handleOpenViewModal}
+                                    onEditar={handleOpenEditModal}
+                                    onEliminar={handleOpenDeleteModal}
+                                    onReactivar={handleReactivarCobrador}
+                                />
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Vista de Tabla - SOLO para desktop (oculto en móvil) */}
+                <div className="hidden lg:block overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
-                            <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                                <TableHeader className="border-b border-gray-100 dark:border-white/[0.05]">
-                                    <TableRow>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400">No.</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Nombre</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Apellidos</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Cédula</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Celular</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Dirección</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Estado</TableCell>
-                                        <TableCell isHeader className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Acciones</TableCell>
-                                    </TableRow>
-                                </TableHeader>
-
-                                <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
+                            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                                <thead className="border-b border-gray-100 dark:border-white/[0.05]">
+                                    <tr>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400">No.</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Nombre</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Apellidos</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Cédula</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Celular</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Dirección</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Estado</th>
+                                        <th className="px-5 py-4 text-lg font-bold text-left text-gray-800 dark:text-gray-400 uppercase">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-100 dark:divide-white/[0.05]">
                                     {loading ? (
-                                        <TableRow>
-                                            <TableCell colSpan={8} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <tr>
+                                            <td colSpan={8} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
                                                 <div className="flex justify-center">
                                                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
                                                 </div>
-                                            </TableCell>
-                                        </TableRow>
+                                            </td>
+                                        </tr>
                                     ) : datosPaginados.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={8} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
+                                        <tr>
+                                            <td colSpan={8} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
                                                 {filtros.search || filtros.estado !== 'todos' || filtros.fechaRegistroInicio
                                                     ? 'No se encontraron resultados con los filtros aplicados'
                                                     : 'No hay cobradores registrados'}
-                                            </TableCell>
-                                        </TableRow>
+                                            </td>
+                                        </tr>
                                     ) : (
                                         datosPaginados.map((cobrador) => (
-                                            <TableRow
+                                            <tr
                                                 key={cobrador.id_cobrador}
                                                 className="hover:bg-gray-50 dark:hover:bg-white/[0.02] transition-colors"
                                             >
-                                                <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
+                                                <td className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
                                                     {cobrador.id_cobrador}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
                                                     {cobrador.nombre}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
                                                     {cobrador.apellidos}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
                                                     {cobrador.cedula}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
                                                     {cobrador.celular}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md text-gray-800 dark:text-gray-200 align-middle">
                                                     {cobrador.direccion || '-'}
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md align-middle">
                                                     <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-md font-medium ${cobrador.activo === 1
                                                         ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
                                                         : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
                                                         }`}>
                                                         {cobrador.activo === 1 ? 'Activo' : 'Inactivo'}
                                                     </span>
-                                                </TableCell>
-                                                <TableCell className="px-5 py-4 text-md align-middle">
+                                                </td>
+                                                <td className="px-5 py-4 text-md align-middle">
                                                     <div className="flex items-center gap-2">
                                                         <button
                                                             onClick={() => handleOpenViewModal(cobrador)}
                                                             className="rounded-lg border border-gray-300 bg-white p-1.5 text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-300 transition-colors"
                                                             title="Ver detalles"
                                                         >
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="w-5 h-5"
-                                                                viewBox="0 0 24 24"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
                                                                 <circle cx="12" cy="12" r="3" />
                                                             </svg>
@@ -566,20 +600,32 @@ export default function Cobradores() {
                                                         >
                                                             <PencilIcon className="w-5 h-5" />
                                                         </button>
-                                                        <button
-                                                            onClick={() => handleOpenDeleteModal(cobrador)}
-                                                            className="rounded-lg border border-gray-300 bg-white p-1.5 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-gray-700 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-white/[0.03] dark:hover:text-red-300 transition-colors"
-                                                            title="Eliminar"
-                                                        >
-                                                            <TrashBinIcon className="w-5 h-5" />
-                                                        </button>
+                                                        {cobrador.activo === 1 ? (
+                                                            <button
+                                                                onClick={() => handleOpenDeleteModal(cobrador)}
+                                                                className="rounded-lg border border-gray-300 bg-white p-1.5 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-gray-700 dark:bg-gray-800 dark:text-red-400 dark:hover:bg-white/[0.03] dark:hover:text-red-300 transition-colors"
+                                                                title="Eliminar"
+                                                            >
+                                                                <TrashBinIcon className="w-5 h-5" />
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => handleReactivarCobrador(cobrador)}
+                                                                className="rounded-lg border border-gray-300 bg-white p-1.5 text-green-600 hover:bg-green-50 hover:text-green-700 dark:border-gray-700 dark:bg-gray-800 dark:text-green-400 dark:hover:bg-white/[0.03] dark:hover:text-green-300 transition-colors"
+                                                                title="Activar"
+                                                            >
+                                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                                </svg>
+                                                            </button>
+                                                        )}
                                                     </div>
-                                                </TableCell>
-                                            </TableRow>
+                                                </td>
+                                            </tr>
                                         ))
                                     )}
-                                </TableBody>
-                            </Table>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

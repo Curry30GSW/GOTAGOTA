@@ -8,6 +8,7 @@ import Home from "./pages/Dashboard/Home";
 import Cobradores from "./pages/Cobradores/Cobradores";
 import Clientes from './pages/Clientes/clientes';
 import Creditos from "./pages/Creditos/Creditos";
+import HistorialCobradores from "./pages/Cobradores/historialCobradores";
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
             <Route path="/cobradores" element={<Cobradores />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/creditos" element={<Creditos />} />
+            <Route path="/historial-cobradores" element={<HistorialCobradores />} />
           </Route>
 
           {/* Auth Layout */}

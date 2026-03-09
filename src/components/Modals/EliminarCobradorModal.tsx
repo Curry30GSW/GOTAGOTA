@@ -25,21 +25,20 @@ export default function EliminarCobradorModal({
                     <TrashBinIcon className="w-8 h-8" />
                 </div>
                 <h2 className="mt-4 text-xl font-semibold text-gray-800 dark:text-white/90">
-                    Confirmar Eliminación
+                    Confirmar Desactivación
                 </h2>
                 <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
-                    ¿Estás seguro de que deseas eliminar al cobrador{' '}
+                    ¿Estás seguro de que deseas desactivar al cobrador{' '}
                     <span className="font-medium text-gray-800 dark:text-white/90">
                         {selectedCobrador.nombre} {selectedCobrador.apellidos}
                     </span>
-                    ? Esta acción no se puede deshacer.
+                    ?
+                </p>
+                <p className="mt-2 text-sm text-red-500 dark:text-red-400">
+                    Una vez desactivado, el cobrador no podrá ser asignado a nuevos deudores, pero los deudores existentes seguirán asociados a él.
                 </p>
                 <div className="mt-6 flex justify-end gap-3">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        onClick={onClose}
-                    >
+                    <Button type="button" variant="outline" onClick={onClose}>
                         Cancelar
                     </Button>
                     <Button
@@ -47,7 +46,7 @@ export default function EliminarCobradorModal({
                         onClick={onConfirm}
                         className="bg-red-600 hover:bg-red-700"
                     >
-                        Eliminar
+                        Desactivar
                     </Button>
                 </div>
             </div>

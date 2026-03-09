@@ -3,7 +3,7 @@ import Swal from 'sweetalert2';
 import PageMeta from '../../components/common/PageMeta';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../components/ui/table';
 import Button from '../../components/ui/button/Button';
-import { EyeIcon, PencilIcon, TrashBinIcon, PlusIcon } from '../../icons';
+import { PencilIcon, TrashBinIcon, PlusIcon } from '../../icons';
 import { Cliente, ClienteFormData, FiltrosClienteState } from '../../types/cliente';
 
 // Importar componentes
@@ -13,6 +13,7 @@ import VerClienteModal from '../../components/Modals/VerClienteModal';
 import EliminarClienteModal from '../../components/Modals/EliminarClienteModal';
 import FiltrosClientes from '../../components/filtros/FiltrosClientes';
 import Paginacion from '../../components/Paginacion/Paginacion';
+import ClienteCard from '../../pages/Clientes/clienteCard';
 
 const API_BASE_URL = 'http://localhost:3000/api';
 const ITEMS_PER_PAGE = 10;
@@ -513,8 +514,36 @@ export default function Clientes() {
                     onLimpiarFiltros={handleLimpiarFiltros}
                 />
 
-                {/* Tabla de clientes */}
-                <div className="overflow-x-auto">
+                {/* Vista de Tarjetas - SOLO para móvil (oculto en desktop) */}
+                <div className="block lg:hidden">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {loading ? (
+                            <div className="col-span-full flex justify-center py-12">
+                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+                            </div>
+                        ) : datosPaginados.length === 0 ? (
+                            <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cobrador !== 'todos' || filtros.fechaRegistroInicio
+                                    ? 'No se encontraron resultados con los filtros aplicados'
+                                    : 'No hay clientes registrados'}
+                            </div>
+                        ) : (
+                            datosPaginados.map((cliente) => (
+                                <ClienteCard
+                                    key={cliente.id_cliente}
+                                    cliente={cliente}
+                                    onVer={handleOpenViewModal}
+                                    onEditar={handleOpenEditModal}
+                                    onEliminar={handleOpenDeleteModal}
+                                    getNombreCobrador={getNombreCobrador}
+                                />
+                            ))
+                        )}
+                    </div>
+                </div>
+
+                {/* Vista de Tabla - SOLO para desktop (oculto en móvil) */}
+                <div className="hidden lg:block overflow-x-auto">
                     <div className="inline-block min-w-full align-middle">
                         <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03]">
                             <Table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -587,16 +616,7 @@ export default function Clientes() {
                                                             className="rounded-lg border border-gray-300 bg-white p-1.5 text-gray-700 hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-300 transition-colors"
                                                             title="Ver detalles"
                                                         >
-                                                            <svg
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                                className="w-5 h-5"
-                                                                viewBox="0 0 24 24"
-                                                                fill="none"
-                                                                stroke="currentColor"
-                                                                strokeWidth="2"
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                            >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" />
                                                                 <circle cx="12" cy="12" r="3" />
                                                             </svg>
