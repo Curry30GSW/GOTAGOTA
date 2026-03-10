@@ -130,12 +130,16 @@ export default function Cobradores() {
         return result.isConfirmed;
     };
 
-    // Cargar cobradores
+    // Cargar cobradores - CON credentials: 'include'
     const fetchCobradores = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/`);
+            const response = await fetch(`${API_BASE_URL}/cobradores/`, {
+                credentials: 'include' // IMPORTANTE: Agregar esto
+            });
+            
             if (!response.ok) throw new Error('Error al cargar cobradores');
+            
             const data = await response.json();
             setCobradores(data.data);
         } catch (err) {
@@ -343,6 +347,7 @@ export default function Cobradores() {
         try {
             const response = await fetch(`${API_BASE_URL}/cobradores/`, {
                 method: 'POST',
+                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -375,6 +380,7 @@ export default function Cobradores() {
         try {
             const response = await fetch(`${API_BASE_URL}/cobradores/${selectedCobrador.id_cobrador}`, {
                 method: 'PUT',
+                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -407,6 +413,7 @@ export default function Cobradores() {
         try {
             const response = await fetch(`${API_BASE_URL}/cobradores/${selectedCobrador.id_cobrador}`, {
                 method: 'DELETE',
+                credentials: 'include', // IMPORTANTE: Agregar esto
             });
 
             const data = await response.json();
@@ -430,6 +437,7 @@ export default function Cobradores() {
                 `${API_BASE_URL}/cobradores/${cobrador.id_cobrador}/reactivar`,
                 {
                     method: 'PATCH',
+                    credentials: 'include', // IMPORTANTE: Agregar esto
                 }
             );
 

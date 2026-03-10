@@ -42,6 +42,12 @@ const navItems: NavItem[] = [
     name: "Historial Cobradores",
     path: "/historial-cobradores",
   },
+
+    {
+    icon: <GroupIcon />,
+    name: "Sedes",
+    path: "/sedes",
+  },
 ];
 
 

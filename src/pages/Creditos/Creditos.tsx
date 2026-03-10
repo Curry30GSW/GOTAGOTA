@@ -24,7 +24,7 @@ export default function Creditos() {
     const [cobradores, setCobradores] = useState<Cobrador[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // NUEVOS ESTADOS PARA EL PAGO
+    // Estados para el pago
     const [creditoAPagar, setCreditoAPagar] = useState<Credito | null>(null);
     const [showPagoConfirm, setShowPagoConfirm] = useState(false);
     const [isPaying, setIsPaying] = useState(false);
@@ -79,7 +79,7 @@ export default function Creditos() {
     // Form errors
     const [formErrors, setFormErrors] = useState<Partial<CreditoFormData>>({});
 
-    // NUEVAS FUNCIONES PARA EL PAGO
+    // FUNCIONES PARA EL PAGO
     const handlePagarCredito = (credito: Credito, e: React.MouseEvent) => {
         e.stopPropagation(); // Evitar que se abra el modal de detalles
         setCreditoAPagar(credito);
@@ -94,6 +94,7 @@ export default function Creditos() {
         try {
             const response = await fetch(`${API_BASE_URL}/creditos/pagar/${creditoAPagar.id_credito}`, {
                 method: 'PUT',
+                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -172,18 +173,20 @@ export default function Creditos() {
         });
     };
 
-    // Cargar datos
+    // Cargar datos - TODAS LAS PETICIONES CON credentials: 'include'
     const fetchCreditos = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/creditos/`);
+            const response = await fetch(`${API_BASE_URL}/creditos/`, {
+                credentials: 'include' // IMPORTANTE: Agregar esto
+            });
+            
             if (!response.ok) throw new Error('Error al cargar créditos');
+            
             const data = await response.json();
 
             // Los créditos ya vienen con la información del cliente y cobrador
-            // del JOIN en el backend (según el JSON que mostraste)
             const creditosConCliente = data.data.map((credito: any) => {
-                // Asegurarse de que los datos del cliente estén presentes
                 return {
                     ...credito,
                     cliente_nombre: credito.cliente_nombre || 'N/A',
@@ -204,11 +207,17 @@ export default function Creditos() {
 
     const fetchClientes = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/`);
+            const response = await fetch(`${API_BASE_URL}/clientes/`, {
+                credentials: 'include' // IMPORTANTE: Agregar esto
+            });
+            
             if (!response.ok) throw new Error('Error al cargar clientes');
+            
             const data = await response.json();
+            
             setClientes(data.data.map((c: any) => ({
                 id_cliente: c.id_cliente,
+                id_cobrador: c.id_cobrador,
                 nombre: c.nombre,
                 apellidos: c.apellidos,
                 cedula: c.cedula
@@ -220,15 +229,21 @@ export default function Creditos() {
 
     const fetchCobradores = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/`);
+            const response = await fetch(`${API_BASE_URL}/cobradores/`, {
+                credentials: 'include' // IMPORTANTE: Agregar esto
+            });
+            
             if (!response.ok) throw new Error('Error al cargar cobradores');
+            
             const data = await response.json();
+            
             // Mapear los datos al formato que necesita el modal
             const cobradoresMapeados = data.data.map((c: any) => ({
                 id_cobrador: c.id_cobrador,
                 nombre: c.nombre,
                 apellidos: c.apellidos
             }));
+            
             setCobradores(cobradoresMapeados);
         } catch (err) {
             console.error('Error al cargar cobradores:', err);
@@ -291,6 +306,7 @@ export default function Creditos() {
             search: '',
             estado: 'todos',
             id_cliente: 'todos',
+            id_cobrador: 'todos',
             fechaInicio: '',
             fechaFin: '',
             montoMinimo: '',
@@ -324,8 +340,13 @@ export default function Creditos() {
         }
 
         // Filtro por cliente
-        if (filtros.id_cliente !== 'todos') {
+        if (filtros.id_cliente !== 'todos' && filtros.id_cliente) {
             filtrados = filtrados.filter(c => c.id_cliente === filtros.id_cliente);
+        }
+
+        // Filtro por cobrador
+        if (filtros.id_cobrador !== 'todos' && filtros.id_cobrador) {
+            filtrados = filtrados.filter(c => c.id_cobrador === filtros.id_cobrador);
         }
 
         // Filtro por rango de montos
@@ -429,6 +450,7 @@ export default function Creditos() {
     const resetForm = () => {
         setFormData({
             id_cliente: 0,
+            id_cobrador: 0,
             monto_prestado: 0,
             numero_cuotas: 1,
             fecha_credito: new Date().toISOString().split('T')[0]
@@ -468,7 +490,7 @@ export default function Creditos() {
             fecha.setMonth(fecha.getMonth() + 1);
             const fechaPago = fecha.toISOString().split('T')[0];
 
-            // IMPORTANTE: Redondear a 2 decimales para evitar problemas con decimales
+            // Redondear a 2 decimales para evitar problemas con decimales
             const montoPorPagarRedondeado = Math.round(montoPorPagar * 100) / 100;
 
             console.log('Enviando crédito:', {
@@ -483,6 +505,7 @@ export default function Creditos() {
 
             const response = await fetch(`${API_BASE_URL}/creditos/`, {
                 method: 'POST',
+                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -573,6 +596,7 @@ export default function Creditos() {
                     filtros={filtros}
                     totalCreditos={totalItems}
                     clientes={clientes}
+                    cobradores={cobradores}
                     onCambiarFiltro={handleCambiarFiltro}
                     onLimpiarFiltros={handleLimpiarFiltros}
                 />
@@ -586,7 +610,7 @@ export default function Creditos() {
                             </div>
                         ) : datosPaginados.length === 0 ? (
                             <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cliente !== 'todos' || filtros.fechaInicio
+                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cliente !== 'todos' || filtros.id_cobrador !== 'todos' || filtros.fechaInicio
                                     ? 'No se encontraron resultados con los filtros aplicados'
                                     : 'No hay créditos registrados'}
                             </div>
@@ -638,7 +662,7 @@ export default function Creditos() {
                                     ) : datosPaginados.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={9} className="px-5 py-8 text-center text-gray-500 dark:text-gray-400">
-                                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cliente !== 'todos' || filtros.fechaInicio
+                                                {filtros.search || filtros.estado !== 'todos' || filtros.id_cliente !== 'todos' || filtros.id_cobrador !== 'todos' || filtros.fechaInicio
                                                     ? 'No se encontraron resultados con los filtros aplicados'
                                                     : 'No hay créditos registrados'}
                                             </TableCell>
@@ -655,7 +679,7 @@ export default function Creditos() {
 
                                             return (
                                                 <TableRow key={credito.id_credito}>
-                                                    <TableCell className="px-5 py-4">
+                                                    <TableCell className="px-5 py-4 text-center">
                                                         #{credito.id_credito}
                                                     </TableCell>
                                                     <TableCell className="px-5 py-4">
@@ -675,13 +699,13 @@ export default function Creditos() {
                                                             </p>
                                                         </div>
                                                     </TableCell>
-                                                    <TableCell className="px-5 py-4">
+                                                    <TableCell className="px-5 py-4 text-center">
                                                         <p className="font-medium text-gray-800 dark:text-white">
                                                             {formatCurrency(montoPrestado)}
                                                         </p>
                                                     </TableCell>
-                                                    <TableCell className="px-5 py-4">
-                                                        <p className="text-blue-600 text-center dark:text-blue-400 font-medium">
+                                                    <TableCell className="px-5 py-4 text-center">
+                                                        <p className="text-blue-600 dark:text-blue-400 font-medium">
                                                             {formatCurrency(montoPorPagar)}
                                                         </p>
                                                     </TableCell>
@@ -691,7 +715,7 @@ export default function Creditos() {
                                                     <TableCell className="px-5 py-4 text-center dark:text-white">
                                                         {formatDate(credito.fecha_pago)}
                                                     </TableCell>
-                                                    <TableCell className="px-5 py-4">
+                                                    <TableCell className="px-5 py-4 text-center">
                                                         <span className={`px-3 py-1 rounded-full text-md font-medium ${getEstadoStyles(credito.estado)}`}>
                                                             {getEstadoLabel(credito.estado)}
                                                         </span>
@@ -724,7 +748,7 @@ export default function Creditos() {
                                                                 </svg>
                                                             </button>
 
-                                                            {/* NUEVO BOTÓN DE PAGAR - Solo para créditos pendientes */}
+                                                            {/* BOTÓN DE PAGAR - Solo para créditos pendientes */}
                                                             {credito.estado === 'pendiente' && (
                                                                 <button
                                                                     onClick={(e) => handlePagarCredito(credito, e)}

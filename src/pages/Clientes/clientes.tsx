@@ -125,54 +125,86 @@ export default function Clientes() {
         return result.isConfirmed;
     };
 
+   
     // Cargar datos
-    const fetchClientes = async () => {
-        setLoading(true);
-        try {
-            const response = await fetch(`${API_BASE_URL}/clientes/`);
-            if (!response.ok) throw new Error('Error al cargar clientes');
-            const data = await response.json();
+   const fetchClientes = async () => {
+    setLoading(true);
+    try {
 
-            // Obtener nombres de cobradores para cada cliente
-            const clientesConCobrador = await Promise.all(
-                data.data.map(async (cliente: any) => {
-                    if (cliente.id_cobrador) {
-                        try {
-                            const cobradorRes = await fetch(`${API_BASE_URL}/cobradores/${cliente.id_cobrador}`);
-                            if (cobradorRes.ok) {
-                                const cobradorData = await cobradorRes.json();
-                                cliente.nombre_cobrador = `${cobradorData.data.nombre} ${cobradorData.data.apellidos}`;
-                            }
-                        } catch (error) {
-                            console.error('Error al cargar cobrador:', error);
+        const response = await fetch(`${API_BASE_URL}/clientes/`, {
+            credentials: "include"
+        });
+
+        if (!response.ok) throw new Error('Error al cargar clientes');
+
+        const data = await response.json();
+
+        const clientesConCobrador = await Promise.all(
+            data.data.map(async (cliente: any) => {
+
+                if (cliente.id_cobrador) {
+
+                    try {
+
+                        const cobradorRes = await fetch(`${API_BASE_URL}/cobradores/${cliente.id_cobrador}`, {
+                            credentials: "include"
+                        });
+
+                        if (cobradorRes.ok) {
+                            const cobradorData = await cobradorRes.json();
+
+                            cliente.nombre_cobrador =
+                                `${cobradorData.data.nombre} ${cobradorData.data.apellidos}`;
                         }
-                    }
-                    return cliente;
-                })
-            );
 
-            setClientes(clientesConCobrador);
-        } catch (err) {
-            mostrarError(err instanceof Error ? err.message : 'Error al cargar clientes');
-        } finally {
-            setLoading(false);
-        }
-    };
+                    } catch (error) {
+                        console.error('Error al cargar cobrador:', error);
+                    }
+
+                }
+
+                return cliente;
+
+            })
+        );
+
+        setClientes(clientesConCobrador);
+
+    } catch (err) {
+
+        mostrarError(err instanceof Error ? err.message : 'Error al cargar clientes');
+
+    } finally {
+
+        setLoading(false);
+
+    }
+};
 
     const fetchCobradores = async () => {
-        try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/`);
-            if (!response.ok) throw new Error('Error al cargar cobradores');
-            const data = await response.json();
-            setCobradores(data.data.map((c: any) => ({
-                id_cobrador: c.id_cobrador,
-                nombre: c.nombre,
-                apellidos: c.apellidos
-            })));
-        } catch (err) {
-            console.error('Error al cargar cobradores:', err);
-        }
-    };
+
+    try {
+
+        const response = await fetch(`${API_BASE_URL}/cobradores/`, {
+            credentials: "include"
+        });
+
+        if (!response.ok) throw new Error('Error al cargar cobradores');
+
+        const data = await response.json();
+
+        setCobradores(data.data.map((c: any) => ({
+            id_cobrador: c.id_cobrador,
+            nombre: c.nombre,
+            apellidos: c.apellidos
+        })));
+
+    } catch (err) {
+
+        console.error('Error al cargar cobradores:', err);
+
+    }
+};
 
     useEffect(() => {
         fetchClientes();
@@ -389,14 +421,14 @@ export default function Clientes() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
-
+           const response = await fetch(`${API_BASE_URL}/clientes/`, {
+                    method: 'POST',
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData)
+                });
             const data = await response.json();
 
             if (!response.ok) {
@@ -421,13 +453,14 @@ export default function Clientes() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/${selectedCliente.id_cliente}`, {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(formData),
-            });
+           const response = await fetch(`${API_BASE_URL}/clientes/${selectedCliente.id_cliente}`, {
+                    method: 'PUT',
+                    credentials: "include",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(formData),
+                });
 
             const data = await response.json();
 
@@ -453,9 +486,10 @@ export default function Clientes() {
         if (!confirmado) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/${selectedCliente.id_cliente}`, {
-                method: 'DELETE',
-            });
+           const response = await fetch(`${API_BASE_URL}/clientes/${selectedCliente.id_cliente}`, {
+                    method: 'DELETE',
+                    credentials: "include"
+                });
 
             const data = await response.json();
 

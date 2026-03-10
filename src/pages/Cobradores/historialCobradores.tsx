@@ -56,7 +56,9 @@ export default function DashboardCobradores() {
     const fetchCobradoresEstadisticas = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/estadisticas/all`);
+            const response = await fetch(`${API_BASE_URL}/cobradores/estadisticas/all`, {
+                    credentials: 'include'
+                });
             if (!response.ok) throw new Error('Error al cargar datos');
             const data = await response.json();
 
