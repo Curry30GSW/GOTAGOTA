@@ -3,7 +3,7 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
 
 interface UserData {
   id: number;

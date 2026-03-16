@@ -12,7 +12,7 @@ import EditarSedeModal from '../../components/Modals/EditarSedeModal';
 import FiltrosSedes from '../../components/filtros//FiltrosSedes';
 import Paginacion from '../../components/Paginacion/Paginacion';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
 const ITEMS_PER_PAGE = 10;
 
 export default function Sedes() {

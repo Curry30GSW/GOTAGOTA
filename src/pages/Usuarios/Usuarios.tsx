@@ -14,7 +14,7 @@ import EliminarUsuarioModal from '../../components/Modals/EliminarUsuarioModal';
 import FiltrosUsuarios from '../../components/filtros/FiltrosUsuarios';
 import Paginacion from '../../components/Paginacion/Paginacion';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
 const ITEMS_PER_PAGE = 10;
 
 export default function Usuarios() {

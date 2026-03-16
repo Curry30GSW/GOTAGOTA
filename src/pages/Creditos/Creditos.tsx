@@ -15,7 +15,7 @@ import FiltrosCreditos from '../../components/filtros/FiltrosCreditos';
 import Paginacion from '../../components/Paginacion/Paginacion';
 import CreditoCard from '../../pages/Creditos/CreditoCard';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
 const ITEMS_PER_PAGE = 10;
 
 export default function Creditos() {
@@ -180,9 +180,9 @@ export default function Creditos() {
             const response = await fetch(`${API_BASE_URL}/creditos/`, {
                 credentials: 'include' // IMPORTANTE: Agregar esto
             });
-            
+
             if (!response.ok) throw new Error('Error al cargar créditos');
-            
+
             const data = await response.json();
 
             // Los créditos ya vienen con la información del cliente y cobrador
@@ -210,11 +210,11 @@ export default function Creditos() {
             const response = await fetch(`${API_BASE_URL}/clientes/`, {
                 credentials: 'include' // IMPORTANTE: Agregar esto
             });
-            
+
             if (!response.ok) throw new Error('Error al cargar clientes');
-            
+
             const data = await response.json();
-            
+
             setClientes(data.data.map((c: any) => ({
                 id_cliente: c.id_cliente,
                 id_cobrador: c.id_cobrador,
@@ -232,18 +232,18 @@ export default function Creditos() {
             const response = await fetch(`${API_BASE_URL}/cobradores/`, {
                 credentials: 'include' // IMPORTANTE: Agregar esto
             });
-            
+
             if (!response.ok) throw new Error('Error al cargar cobradores');
-            
+
             const data = await response.json();
-            
+
             // Mapear los datos al formato que necesita el modal
             const cobradoresMapeados = data.data.map((c: any) => ({
                 id_cobrador: c.id_cobrador,
                 nombre: c.nombre,
                 apellidos: c.apellidos
             }));
-            
+
             setCobradores(cobradoresMapeados);
         } catch (err) {
             console.error('Error al cargar cobradores:', err);

@@ -35,80 +35,80 @@ export default function SignInForm() {
   };
 
 
- const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
 
-  e.preventDefault();
-  setLoading(true);
-  setError("");
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-  try {
+    try {
 
-    const response = await fetch("http://localhost:3000/api/login", {
+      const response = await fetch("https://api-integracion-movil.vercel.app//login", {
 
-      method: "POST",
+        method: "POST",
 
-      headers: {
-        "Content-Type": "application/json"
-      },
+        headers: {
+          "Content-Type": "application/json"
+        },
 
-      credentials: "include",
+        credentials: "include",
 
-      body: JSON.stringify({
-        usuario: formData.usuario,
-        contraseña: formData.contraseña
-      })
+        body: JSON.stringify({
+          usuario: formData.usuario,
+          contraseña: formData.contraseña
+        })
 
-    });
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
+      if (!response.ok) {
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: data.message || "Usuario o contraseña incorrectos"
+        });
+
+        setLoading(false);
+        return;
+
+      }
+
+      if (data.success) {
+
+        localStorage.setItem("user", JSON.stringify(data.user));
+        localStorage.setItem("sede", data.user.sede);
+
+        Swal.fire({
+          icon: "success",
+          title: "Login exitoso",
+          text: `Bienvenido ${data.user.nombre}`,
+          confirmButtonColor: "#3085d6",
+          confirmButtonText: "Entrar"
+        }).then(() => {
+
+          navigate("/cobradores");
+
+        });
+
+      }
+
+    } catch (err) {
+
+      console.error("Error:", err);
 
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: data.message || "Usuario o contraseña incorrectos"
-      });
-
-      setLoading(false);
-      return;
-
-    }
-
-    if (data.success) {
-
-      localStorage.setItem("user", JSON.stringify(data.user));
-      localStorage.setItem("sede", data.user.sede);
-
-      Swal.fire({
-        icon: "success",
-        title: "Login exitoso",
-        text: `Bienvenido ${data.user.nombre}`,
-        confirmButtonColor: "#3085d6",
-        confirmButtonText: "Entrar"
-      }).then(() => {
-
-        navigate("/cobradores");
-
+        text: "No se pudo conectar con el servidor"
       });
 
     }
 
-  } catch (err) {
+    setLoading(false);
 
-    console.error("Error:", err);
-
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "No se pudo conectar con el servidor"
-    });
-
-  }
-
-  setLoading(false);
-
-};
+  };
 
 
 

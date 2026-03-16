@@ -7,7 +7,7 @@ import EstadisticasCobradoresChart from './EstadisticasCobradorChart';
 import CobradorDashboardCard from './CobradorDashboardCard';
 import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../components/ui/table';
 
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
 
 interface CobradorEstadisticas {
     id_cobrador: number;
@@ -57,8 +57,8 @@ export default function DashboardCobradores() {
         setLoading(true);
         try {
             const response = await fetch(`${API_BASE_URL}/cobradores/estadisticas/all`, {
-                    credentials: 'include'
-                });
+                credentials: 'include'
+            });
             if (!response.ok) throw new Error('Error al cargar datos');
             const data = await response.json();
 
