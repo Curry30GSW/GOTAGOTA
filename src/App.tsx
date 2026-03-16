@@ -9,7 +9,7 @@ import Cobradores from "./pages/Cobradores/Cobradores";
 import Clientes from './pages/Clientes/clientes';
 import Creditos from "./pages/Creditos/Creditos";
 import HistorialCobradores from "./pages/Cobradores/historialCobradores";
-import Sedes from './pages/Sede/Sedes';
+import Sedes from './pages/Configuracion/index';
 
 export default function App() {
   return (

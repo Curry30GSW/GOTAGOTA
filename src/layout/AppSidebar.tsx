@@ -9,6 +9,8 @@ import {
   HorizontaLDots,
   UserCircleIcon,
   GroupIcon,
+  LockIcon,
+  TaskIcon // Necesitas importar o crear este icono
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
@@ -19,6 +21,16 @@ type NavItem = {
   path?: string;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
+
+// Interfaz para los datos del usuario
+interface UserData {
+  id: number;
+  nombre: string;
+  usuario?: string;
+  rol: string;
+  sede: number;           // ✅ Ahora es número
+  nombre_sede: string;    // ✅ Nombre aparte
+}
 
 const navItems: NavItem[] = [
   {
@@ -36,31 +48,40 @@ const navItems: NavItem[] = [
     name: "Creditos",
     path: "/creditos",
   },
-
   {
     icon: <GroupIcon />,
     name: "Historial Cobradores",
     path: "/historial-cobradores",
   },
-
-    {
-    icon: <GroupIcon />,
-    name: "Sedes",
+  {
+    icon: <TaskIcon />,
+    name: "Configuracion",
     path: "/sedes",
   },
 ];
 
-
-
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const [user, setUser] = useState<UserData | null>(null);
 
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<number, number>>({});
   const subMenuRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
-  // const isActive = (path: string) => location.pathname === path;
+  // Cargar datos del usuario
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      try {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error al parsear usuario:', error);
+      }
+    }
+  }, []);
+
   const isActive = useCallback(
     (path: string) => location.pathname === path,
     [location.pathname]
@@ -99,6 +120,18 @@ const AppSidebar: React.FC = () => {
 
   const handleSubmenuToggle = (index: number) => {
     setOpenSubmenu(prev => (prev === index ? null : index));
+  };
+
+  // Función para obtener color según el rol
+  const getRoleColor = (rol: string) => {
+    switch (rol) {
+      case 'admin':
+        return 'from-blue-500 to-blue-600';
+      case 'supervisor':
+        return 'from-blue-500 to-blue-600';
+      default:
+        return 'from-green-500 to-green-600';
+    }
   };
 
   const renderMenuItems = (items: NavItem[]) => (
@@ -256,6 +289,56 @@ const AppSidebar: React.FC = () => {
           )}
         </Link>
       </div>
+
+      {/* 🏢 Sede Info - Nuevo componente */}
+      {(isExpanded || isHovered || isMobileOpen) && user && (
+        <div className="mb-6 px-2">
+          <div className={`bg-gradient-to-r ${getRoleColor(user.rol)} rounded-xl p-4 shadow-lg`}>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-white/20 rounded-lg">
+                <LockIcon className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <p className="text-xs text-white/80">Sede actual</p>
+                <p className="font-semibold text-white text-sm">
+                  {user.nombre_sede}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mt-3 pt-2 border-t border-white/20">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                <span className="text-xs text-white/90">
+                  {user.rol === 'admin' ? 'Administrador' :
+                    user.rol === 'supervisor' ? 'Supervisor' : 'Usuario'}
+                </span>
+              </div>
+              <span className="text-xs font-medium text-white/90">
+                ID: {user.sede}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Versión compacta para cuando el sidebar está colapsado */}
+      {!isExpanded && !isHovered && !isMobileOpen && user && (
+        <div className="mb-6 flex justify-center">
+          <div className="relative group">
+            <div className={`w-10 h-10 rounded-xl bg-gradient-to-r ${getRoleColor(user.rol)} flex items-center justify-center shadow-lg cursor-help`}>
+              <LockIcon className="w-5 h-5 text-white" />
+            </div>
+
+            {/* Tooltip al hacer hover */}
+            <div className="absolute left-full ml-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap z-50">
+              <p className="font-semibold">{user.nombre_sede}</p>
+              <p className="text-gray-300 text-[10px] mt-1">ID: {user.sede}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col flex-1 overflow-y-auto duration-300 ease-linear no-scrollbar">
         <nav className="mb-6">
           <div className="flex flex-col gap-4">

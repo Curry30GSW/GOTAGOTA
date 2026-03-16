@@ -1,4 +1,8 @@
 import React from 'react';
+import { Modal } from '../ui/modal';
+import Button from '../ui/button/Button';
+import Input from '../form/input/InputField';
+import Label from '../form/Label';
 import { SedeFormData } from '../../types/sede';
 
 interface CrearSedeModalProps {
@@ -21,85 +25,126 @@ export default function CrearSedeModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-2xl bg-white p-6 dark:bg-gray-900">
-                <h2 className="text-xl font-semibold text-gray-800 dark:text-white/90 mb-4">
-                    Nueva Sede
-                </h2>
+        <Modal isOpen={isOpen} onClose={onClose} size="md">
+            <div className="relative">
+                {/* Header */}
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                            Nueva Sede
+                        </h3>
+                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                            Registre una nueva sede en el sistema
+                        </p>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-500 rounded-lg hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 transition-colors"
+                    >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
 
-                <form onSubmit={onSubmit}>
-                    {/* Nombre */}
-                    <div className="mb-4">
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Nombre de la Sede *
-                        </label>
-                        <input
+                {/* Formulario */}
+                <form onSubmit={onSubmit} className="space-y-5">
+                    {/* Nombre de la Sede */}
+                    <div>
+                        <Label>
+                            Nombre de la Sede <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
                             type="text"
                             name="nombre_sede"
                             value={formData.nombre_sede}
                             onChange={onChange}
-                            className={`w-full rounded-lg border ${formErrors.nombre_sede ? 'border-red-500' : 'border-gray-300'} bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:text-white/90`}
                             placeholder="Ej: Sede Centro"
+                            required
+                            error={formErrors.nombre_sede}
+                            hint={formErrors.nombre_sede}
                         />
-                        {formErrors.nombre_sede && (
-                            <p className="mt-1 text-xs text-red-500">{formErrors.nombre_sede}</p>
-                        )}
                     </div>
 
                     {/* Dirección */}
-                    <div className="mb-4">
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Dirección *
-                        </label>
-                        <input
+                    <div>
+                        <Label>
+                            Dirección <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
                             type="text"
                             name="direccion"
                             value={formData.direccion}
                             onChange={onChange}
-                            className={`w-full rounded-lg border ${formErrors.direccion ? 'border-red-500' : 'border-gray-300'} bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:text-white/90`}
                             placeholder="Ej: Calle 123 #45-67"
+                            required
+                            error={formErrors.direccion}
+                            hint={formErrors.direccion}
                         />
-                        {formErrors.direccion && (
-                            <p className="mt-1 text-xs text-red-500">{formErrors.direccion}</p>
-                        )}
                     </div>
 
                     {/* Teléfono */}
-                    <div className="mb-6">
-                        <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Teléfono *
-                        </label>
-                        <input
+                    <div>
+                        <Label>
+                            Teléfono <span className="text-red-500">*</span>
+                        </Label>
+                        <Input
                             type="tel"
                             name="telefono"
                             value={formData.telefono}
                             onChange={onChange}
-                            className={`w-full rounded-lg border ${formErrors.telefono ? 'border-red-500' : 'border-gray-300'} bg-transparent px-4 py-2.5 text-sm text-gray-800 focus:border-blue-500 focus:outline-none dark:border-gray-700 dark:text-white/90`}
                             placeholder="Ej: 3001234567"
+                            required
+                            error={formErrors.telefono}
+                            hint={formErrors.telefono}
                         />
-                        {formErrors.telefono && (
-                            <p className="mt-1 text-xs text-red-500">{formErrors.telefono}</p>
-                        )}
                     </div>
 
-                    {/* Botones */}
-                    <div className="flex justify-end gap-3">
-                        <button
+                    {/* Información adicional opcional */}
+                    {formData.nombre_sede && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4">
+                            <h4 className="text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">
+                                📋 Resumen de la Sede
+                            </h4>
+                            <div className="space-y-1 text-sm">
+                                <p className="text-gray-600 dark:text-gray-400">
+                                    <span className="font-medium">Nombre:</span>{' '}
+                                    {formData.nombre_sede}
+                                </p>
+                                {formData.direccion && (
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                        <span className="font-medium">Dirección:</span>{' '}
+                                        {formData.direccion}
+                                    </p>
+                                )}
+                                {formData.telefono && (
+                                    <p className="text-gray-600 dark:text-gray-400">
+                                        <span className="font-medium">Teléfono:</span>{' '}
+                                        {formData.telefono}
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Botones de acción */}
+                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                        <Button
                             type="button"
+                            variant="outline"
                             onClick={onClose}
-                            className="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03]"
                         >
                             Cancelar
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             type="submit"
-                            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                             Crear Sede
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>
-        </div>
+        </Modal>
     );
 }

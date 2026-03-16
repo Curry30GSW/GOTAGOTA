@@ -108,9 +108,9 @@ export default function Sedes() {
             const response = await fetch(`${API_BASE_URL}/sedes/`, {
                 credentials: 'include'
             });
-            
+
             if (!response.ok) throw new Error('Error al cargar sedes');
-            
+
             const data = await response.json();
             setSedes(data.data);
         } catch (err) {
@@ -126,9 +126,9 @@ export default function Sedes() {
             const response = await fetch(`${API_BASE_URL}/sedes/admin/all`, {
                 credentials: 'include'
             });
-            
+
             if (!response.ok) throw new Error('Error al cargar sedes');
-            
+
             const data = await response.json();
             setSedes(data.data);
         } catch (err) {
@@ -142,7 +142,7 @@ export default function Sedes() {
         // Determinar si el usuario es admin (esto debe venir de tu contexto de autenticación)
         const userStr = localStorage.getItem('user');
         const user = userStr ? JSON.parse(userStr) : null;
-        
+
         if (user?.rol === 'admin') {
             fetchSedesAdmin();
         } else {
@@ -191,7 +191,7 @@ export default function Sedes() {
             filtrados.sort((a, b) => {
                 const nombreA = a.nombre_sede.toLowerCase();
                 const nombreB = b.nombre_sede.toLowerCase();
-                return filtros.ordenNombre === 'asc' 
+                return filtros.ordenNombre === 'asc'
                     ? nombreA.localeCompare(nombreB)
                     : nombreB.localeCompare(nombreA);
             });
@@ -292,7 +292,7 @@ export default function Sedes() {
             mostrarExito('Sede creada exitosamente');
             setIsCreateModalOpen(false);
             resetForm();
-            
+
             // Recargar según el rol
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : null;
@@ -336,7 +336,7 @@ export default function Sedes() {
             setIsEditModalOpen(false);
             resetForm();
             setSelectedSede(null);
-            
+
             // Recargar según el rol
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : null;
@@ -353,7 +353,7 @@ export default function Sedes() {
 
     const handleDeleteSede = async (id: number) => {
         const confirm = await mostrarConfirmacion(
-            '¿Eliminar sede?',
+            'Inhabilitar sede',
             'Esta acción desactivará la sede. ¿Estás seguro?'
         );
 
@@ -375,7 +375,7 @@ export default function Sedes() {
             }
 
             mostrarExito('Sede eliminada exitosamente');
-            
+
             // Recargar según el rol
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : null;
@@ -407,7 +407,7 @@ export default function Sedes() {
             }
 
             mostrarExito('Sede activada exitosamente');
-            
+
             // Recargar según el rol
             const userStr = localStorage.getItem('user');
             const user = userStr ? JSON.parse(userStr) : null;
@@ -466,13 +466,13 @@ export default function Sedes() {
                             Gestiona las sedes del sistema
                         </p>
                     </div>
-                        <Button
-                            onClick={handleOpenCreateModal}
-                            className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-100 px-4 py-2.5 text-sm font-medium text-blue-700 shadow-theme-xs transition-colors hover:bg-blue-200 hover:text-blue-800 dark:border-blue-500 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
-                        >
-                            <PlusIcon className="w-4 h-4" />
-                            Nueva Sede
-                        </Button>
+                    <Button
+                        onClick={handleOpenCreateModal}
+                        className="inline-flex items-center gap-2 rounded-lg border border-blue-600 bg-blue-100 px-4 py-2.5 text-sm font-medium text-blue-700 shadow-theme-xs transition-colors hover:bg-blue-200 hover:text-blue-800 dark:border-blue-500 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40"
+                    >
+                        <PlusIcon className="w-4 h-4" />
+                        Nueva Sede
+                    </Button>
                 </div>
 
                 {/* Filtros */}
@@ -571,7 +571,7 @@ export default function Sedes() {
                                                                     />
                                                                 </svg>
                                                             </button>
-                                                            
+
                                                             {sede.activo === 1 ? (
                                                                 <button
                                                                     onClick={() => handleDeleteSede(sede.id_sede)}

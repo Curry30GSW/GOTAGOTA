@@ -137,9 +137,9 @@ export default function Cobradores() {
             const response = await fetch(`${API_BASE_URL}/cobradores/`, {
                 credentials: 'include' // IMPORTANTE: Agregar esto
             });
-            
+
             if (!response.ok) throw new Error('Error al cargar cobradores');
-            
+
             const data = await response.json();
             setCobradores(data.data);
         } catch (err) {
