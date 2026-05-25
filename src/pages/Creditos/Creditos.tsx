@@ -6,6 +6,7 @@ import Button from '../../components/ui/button/Button';
 import { PlusIcon } from '../../icons';
 import { Credito, CreditoFormData, FiltrosCreditoState, getEstadoLabel } from '../../types/credito';
 import { Cobrador } from '../../types/cobrador';
+import { apiFetch } from '../../components/utils/api';
 
 // Importar componentes
 import CrearCreditoModal from '../../components/Modals/CrearCreditoModal';
@@ -15,7 +16,7 @@ import FiltrosCreditos from '../../components/filtros/FiltrosCreditos';
 import Paginacion from '../../components/Paginacion/Paginacion';
 import CreditoCard from '../../pages/Creditos/CreditoCard';
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+// const API_BASE_URL = 'https://api-integracion-movil.vercel.app/api';
 const ITEMS_PER_PAGE = 10;
 
 export default function Creditos() {
@@ -71,6 +72,7 @@ export default function Creditos() {
     // Form state
     const [formData, setFormData] = useState<CreditoFormData>({
         id_cliente: 0,
+        id_cobrador: 0,
         monto_prestado: 0,
         numero_cuotas: 1,
         fecha_credito: new Date().toISOString().split('T')[0]
@@ -92,7 +94,7 @@ export default function Creditos() {
         setIsPaying(true);
 
         try {
-            const response = await fetch(`${API_BASE_URL}/creditos/pagar/${creditoAPagar.id_credito}`, {
+            const response = await apiFetch(`/creditos/pagar/${creditoAPagar.id_credito}`, {
                 method: 'PUT',
                 credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
@@ -177,9 +179,7 @@ export default function Creditos() {
     const fetchCreditos = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/creditos/`, {
-                credentials: 'include' // IMPORTANTE: Agregar esto
-            });
+            const response = await apiFetch(`/creditos/`);
 
             if (!response.ok) throw new Error('Error al cargar créditos');
 
@@ -207,9 +207,7 @@ export default function Creditos() {
 
     const fetchClientes = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/`, {
-                credentials: 'include' // IMPORTANTE: Agregar esto
-            });
+            const response = await apiFetch(`/clientes/`);
 
             if (!response.ok) throw new Error('Error al cargar clientes');
 
@@ -229,9 +227,7 @@ export default function Creditos() {
 
     const fetchCobradores = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/`, {
-                credentials: 'include' // IMPORTANTE: Agregar esto
-            });
+            const response = await apiFetch(`/cobradores/`);
 
             if (!response.ok) throw new Error('Error al cargar cobradores');
 
@@ -329,7 +325,7 @@ export default function Creditos() {
             filtrados = filtrados.filter(c =>
                 c.cliente_nombre?.toLowerCase().includes(searchLower) ||
                 c.cliente_apellidos?.toLowerCase().includes(searchLower) ||
-                c.cliente_cedula?.includes(filtros.search) ||
+                c.cedula?.includes(filtros.search) ||
                 c.id_credito.toString().includes(filtros.search)
             );
         }
@@ -349,14 +345,14 @@ export default function Creditos() {
             filtrados = filtrados.filter(c => c.id_cobrador === filtros.id_cobrador);
         }
 
-        // Filtro por rango de montos
+        // ✅ FILTRO POR RANGO DE MONTOS - CORREGIDO
         if (filtros.montoMinimo) {
             const min = parseFloat(filtros.montoMinimo);
-            filtrados = filtrados.filter(c => c.monto_prestado >= min);
+            filtrados = filtrados.filter(c => Number(c.monto_prestado) >= min);
         }
         if (filtros.montoMaximo) {
             const max = parseFloat(filtros.montoMaximo);
-            filtrados = filtrados.filter(c => c.monto_prestado <= max);
+            filtrados = filtrados.filter(c => Number(c.monto_prestado) <= max);
         }
 
         // Filtro por rango de fechas
@@ -369,12 +365,14 @@ export default function Creditos() {
             });
         }
 
-        // Ordenamiento
+        // ✅ ORDENAMIENTO - CORREGIDO
         if (filtros.ordenMonto) {
             filtrados.sort((a, b) => {
+                const montoA = Number(a.monto_prestado);
+                const montoB = Number(b.monto_prestado);
                 return filtros.ordenMonto === 'asc'
-                    ? a.monto_prestado - b.monto_prestado
-                    : b.monto_prestado - a.monto_prestado;
+                    ? montoA - montoB
+                    : montoB - montoA;
             });
         } else if (filtros.ordenFecha) {
             filtrados.sort((a, b) => {
@@ -420,7 +418,7 @@ export default function Creditos() {
     };
 
     const validateForm = (): boolean => {
-        const errors: Partial<CreditoFormData> = {};
+        const errors: Partial<Record<keyof CreditoFormData, string>> = {};
 
         if (!formData.id_cliente || formData.id_cliente === 0) {
             errors.id_cliente = 'Debe seleccionar un cliente';
@@ -438,7 +436,7 @@ export default function Creditos() {
             errors.fecha_credito = 'La fecha es requerida';
         }
 
-        setFormErrors(errors);
+        setFormErrors(errors as Partial<CreditoFormData>);
 
         if (Object.keys(errors).length > 0) {
             mostrarError('Por favor, completa correctamente todos los campos requeridos');
@@ -503,9 +501,8 @@ export default function Creditos() {
                 estado: 'pendiente'
             });
 
-            const response = await fetch(`${API_BASE_URL}/creditos/`, {
+            const response = await apiFetch(`/creditos/`, {
                 method: 'POST',
-                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -596,7 +593,6 @@ export default function Creditos() {
                     filtros={filtros}
                     totalCreditos={totalItems}
                     clientes={clientes}
-                    cobradores={cobradores}
                     onCambiarFiltro={handleCambiarFiltro}
                     onLimpiarFiltros={handleLimpiarFiltros}
                 />

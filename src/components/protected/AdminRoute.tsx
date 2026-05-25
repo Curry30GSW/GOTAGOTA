@@ -1,12 +1,12 @@
 import { Navigate } from 'react-router';
 import { useAuth } from '../../context/AuthContext';
 
-interface ProtectedRouteProps {
+interface AdminRouteProps {
     children: React.ReactNode;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-    const { isAuthenticated, loading } = useAuth();
+export default function AdminRoute({ children }: AdminRouteProps) {
+    const { user, isAuthenticated, loading } = useAuth();
 
     if (loading) {
         return (
@@ -18,6 +18,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
 
     if (!isAuthenticated) {
         return <Navigate to="/signin" replace />;
+    }
+
+    if (user?.rol !== 'admin') {
+        return <Navigate to="/dashboard" replace />;
     }
 
     return <>{children}</>;

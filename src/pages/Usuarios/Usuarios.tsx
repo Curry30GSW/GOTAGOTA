@@ -5,7 +5,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../compon
 import Button from '../../components/ui/button/Button';
 import { EyeIcon, PencilIcon, TrashBinIcon, PlusIcon } from '../../icons';
 import { Usuario, UsuarioFormData, FiltrosUsuarioState } from '../../types/usuario';
-
+import { apiFetch } from '../../components/utils/api';
 // Importar componentes
 import CrearUsuarioModal from '../../components/Modals/CrearUsuarioModal';
 import EditarUsuarioModal from '../../components/Modals/EditarUsuarioModal';
@@ -14,7 +14,7 @@ import EliminarUsuarioModal from '../../components/Modals/EliminarUsuarioModal';
 import FiltrosUsuarios from '../../components/filtros/FiltrosUsuarios';
 import Paginacion from '../../components/Paginacion/Paginacion';
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+// const API_BASE_URL = 'https://api-integracion-movil.vercel.app';
 const ITEMS_PER_PAGE = 10;
 
 export default function Usuarios() {
@@ -42,13 +42,16 @@ export default function Usuarios() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedUsuario, setSelectedUsuario] = useState<Usuario | null>(null);
 
+    const [sedes, setSedes] = useState<{ id_sede: number; nombre_sede: string; activo: number }[]>([]);
+    const userRol = 'admin';
+
     // Form state
     const [formData, setFormData] = useState<UsuarioFormData>({
         usuario: '',
         contraseña: '',
         nombre: '',
         rol: '',
-        activo: 1
+        id_sede: 0
     });
 
     // Form errors
@@ -124,8 +127,8 @@ export default function Usuarios() {
     const fetchUsuarios = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/`, {
-                credentials: 'include'
+            const response = await apiFetch(`/usuarios/`, {
+                // credentials: 'include'
             });
             if (!response.ok) throw new Error('Error al cargar usuarios');
             const data = await response.json();
@@ -137,8 +140,24 @@ export default function Usuarios() {
         }
     };
 
+
+    const fetchSedes = async () => {
+        try {
+            const response = await apiFetch(`/sedes/`, {
+                // credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setSedes(data.data || []);
+            }
+        } catch (error) {
+            console.error('Error al cargar sedes:', error);
+        }
+    };
+
     useEffect(() => {
         fetchUsuarios();
+        fetchSedes();
     }, []);
 
     // Manejador de cambios en filtros
@@ -298,7 +317,7 @@ export default function Usuarios() {
             contraseña: '',
             nombre: '',
             rol: '',
-            activo: 1
+            id_sede: 0
         });
         setFormErrors({});
     };
@@ -320,7 +339,7 @@ export default function Usuarios() {
             contraseña: '',
             nombre: usuario.nombre,
             rol: usuario.rol,
-            activo: usuario.activo
+            id_sede: usuario.id_sede
         });
         setFormErrors({});
         setIsEditModalOpen(true);
@@ -339,9 +358,9 @@ export default function Usuarios() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/`, {
+            const response = await apiFetch(`/usuarios/`, {
                 method: 'POST',
-                credentials: 'include',
+                // credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -372,9 +391,9 @@ export default function Usuarios() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/${selectedUsuario.id_usuario}`, {
+            const response = await apiFetch(`/usuarios/${selectedUsuario.id_usuario}`, {
                 method: 'PUT',
-                credentials: 'include',
+                // credentials: 'include',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -405,9 +424,9 @@ export default function Usuarios() {
         if (!confirmado) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/${selectedUsuario.id_usuario}`, {
+            const response = await apiFetch(`/usuarios/${selectedUsuario.id_usuario}`, {
                 method: 'DELETE',
-                credentials: 'include',
+                // credentials: 'include',
             });
 
             const data = await response.json();
@@ -579,6 +598,8 @@ export default function Usuarios() {
                 onChange={handleInputChange}
                 onSubmit={handleCreateUsuario}
                 formErrors={formErrors}
+                sedes={sedes}
+                userRol={userRol}
             />
 
             <EditarUsuarioModal
@@ -587,8 +608,10 @@ export default function Usuarios() {
                 formData={formData}
                 onChange={handleInputChange}
                 onSubmit={handleUpdateUsuario}
-                selectedUsuario={selectedUsuario}
                 formErrors={formErrors}
+                usuario={selectedUsuario}
+                sedes={sedes}
+                userRol={userRol}
             />
 
             <VerUsuarioModal

@@ -164,9 +164,10 @@ export default function EstadisticasCobradoresChart({ cobradores, formatCurrency
             fontFamily: "Outfit",
             fontSize: "14px",
             markers: {
-                width: 12,
-                height: 12,
-                radius: 12,
+                size: 12,
+                shape: "circle",
+                offsetX: 0,
+                offsetY: 0
             },
             itemMargin: {
                 horizontal: 10,

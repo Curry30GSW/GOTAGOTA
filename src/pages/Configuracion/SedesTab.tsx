@@ -8,8 +8,8 @@ import CrearSedeModal from '../../components/Modals/CrearSedeModal';
 import EditarSedeModal from '../../components/Modals/EditarSedeModal';
 import FiltrosSedes from '../../components/filtros/FiltrosSedes';
 import Paginacion from '../../components/Paginacion/Paginacion';
-
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+import { apiFetch } from '../../components/utils/api';
+// const API_BASE_URL = 'https://api-integracion-movil.vercel.app/api';
 const ITEMS_PER_PAGE = 10;
 
 export default function SedesTab() {
@@ -102,8 +102,7 @@ export default function SedesTab() {
     const fetchSedes = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/sedes/admin/all`, {
-                credentials: 'include'
+            const response = await apiFetch(`/sedes/admin/all`, {
             });
 
             if (!response.ok) throw new Error('Error al cargar sedes');
@@ -233,9 +232,8 @@ export default function SedesTab() {
         if (!validateForm()) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/sedes/`, {
+            const response = await apiFetch(`/sedes/`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
@@ -262,9 +260,8 @@ export default function SedesTab() {
         if (!validateForm()) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/sedes/${selectedSede.id_sede}`, {
+            const response = await apiFetch(`/sedes/${selectedSede.id_sede}`, {
                 method: 'PUT',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
@@ -294,9 +291,8 @@ export default function SedesTab() {
         if (!confirm) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/sedes/${id}`, {
+            const response = await apiFetch(`/sedes/${id}`, {
                 method: 'DELETE',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
 
@@ -315,9 +311,8 @@ export default function SedesTab() {
 
     const handleActivateSede = async (id: number) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/sedes/${id}/activate`, {
+            const response = await apiFetch(`/sedes/${id}/activate`, {
                 method: 'PATCH',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
 

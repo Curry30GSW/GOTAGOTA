@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
 import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
@@ -17,10 +17,13 @@ export default function App() {
       <Router>
         <ScrollToTop />
         <Routes>
-          {/* Dashboard Layout */}
-          <Route element={<AppLayout />}>
-            <Route index path="/" element={<Home />} />
+          {/* Auth Layout - PONER ESTAS PRIMERO */}
+          <Route path="/signin" element={<SignIn />} />
+          <Route path="/signup" element={<SignUp />} />
 
+          {/* Dashboard Layout - PROTEGIDAS */}
+          <Route element={<AppLayout />}>
+            <Route path="/dashboard" element={<Home />} /> {/* Cambiado de "/" a "/dashboard" */}
             <Route path="/cobradores" element={<Cobradores />} />
             <Route path="/clientes" element={<Clientes />} />
             <Route path="/creditos" element={<Creditos />} />
@@ -28,9 +31,8 @@ export default function App() {
             <Route path="/sedes" element={<Sedes />} />
           </Route>
 
-          {/* Auth Layout */}
-          <Route path="/signin" element={<SignIn />} />
-          <Route path="/signup" element={<SignUp />} />
+          {/* Redirección de raíz a login */}
+          <Route path="/" element={<Navigate to="/signin" replace />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<NotFound />} />

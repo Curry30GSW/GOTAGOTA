@@ -1,21 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import Swal from 'sweetalert2';
 import PageMeta from '../../components/common/PageMeta';
-import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../components/ui/table';
 import Button from '../../components/ui/button/Button';
 import { PencilIcon, TrashBinIcon } from '../../icons';
 import { Cobrador, CobradorFormData, FiltrosCobradorState } from '../../types/cobrador';
+import { apiFetch } from '../../components/utils/api';
 
 // Importar componentes
 import CrearCobradorModal from '../../components/Modals/CrearCobradorModal';
 import EditarCobradorModal from '../../components/Modals/EditarCobradorModal';
 import VerCobradorModal from '../../components/Modals/VerCobradorModal';
 import EliminarCobradorModal from '../../components/Modals/EliminarCobradorModal';
-import FiltrosCobradores from '../../components/Filtros/FiltrosCobradores';
+import FiltrosCobradores from '../../components/filtros/FiltrosCobradores';
 import Paginacion from '../../components/Paginacion/Paginacion';
 import CobradorCard from '../../pages/Cobradores/CobradorCard';
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+// const API_BASE_URL = 'https://api-integracion-movil.vercel.app/api';
 const ITEMS_PER_PAGE = 10;
 
 export default function Cobradores() {
@@ -134,9 +134,7 @@ export default function Cobradores() {
     const fetchCobradores = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/`, {
-                credentials: 'include' // IMPORTANTE: Agregar esto
-            });
+            const response = await apiFetch(`/cobradores/`);
 
             if (!response.ok) throw new Error('Error al cargar cobradores');
 
@@ -345,9 +343,8 @@ export default function Cobradores() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/`, {
+            const response = await apiFetch(`/cobradores/`, {
                 method: 'POST',
-                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -378,9 +375,8 @@ export default function Cobradores() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/${selectedCobrador.id_cobrador}`, {
+            const response = await apiFetch(`/cobradores/${selectedCobrador.id_cobrador}`, {
                 method: 'PUT',
-                credentials: 'include', // IMPORTANTE: Agregar esto
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -411,9 +407,8 @@ export default function Cobradores() {
         if (!confirmado) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/cobradores/${selectedCobrador.id_cobrador}`, {
+            const response = await apiFetch(`/cobradores/${selectedCobrador.id_cobrador}`, {
                 method: 'DELETE',
-                credentials: 'include', // IMPORTANTE: Agregar esto
             });
 
             const data = await response.json();
@@ -433,11 +428,10 @@ export default function Cobradores() {
 
     const handleReactivarCobrador = async (cobrador: Cobrador) => {
         try {
-            const response = await fetch(
-                `${API_BASE_URL}/cobradores/${cobrador.id_cobrador}/reactivar`,
+            const response = await apiFetch(
+                `/cobradores/${cobrador.id_cobrador}/reactivar`,
                 {
-                    method: 'PATCH',
-                    credentials: 'include', // IMPORTANTE: Agregar esto
+                    method: 'PATCH'
                 }
             );
 

@@ -9,8 +9,9 @@ import EditarUsuarioModal from '../../components/Modals/EditarUsuarioModal';
 import FiltrosUsuarios from '../../components/filtros/FiltrosUsuarios';
 import Paginacion from '../../components/Paginacion/Paginacion';
 import UsuarioCard from './UsuarioCard'; // ← Importar el nuevo componente
+import { apiFetch } from '../../components/utils/api';
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+
 const ITEMS_PER_PAGE = 10;
 
 export default function UsuariosTab() {
@@ -18,17 +19,16 @@ export default function UsuariosTab() {
     const [sedes, setSedes] = useState<{ id_sede: number; nombre_sede: string; activo: number }[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Obtener usuario actual
-    const currentUserStr = localStorage.getItem('user');
-    const currentUser = currentUserStr ? JSON.parse(currentUserStr) : null;
 
     // Estados para filtros
     const [filtros, setFiltros] = useState<FiltrosUsuarioState>({
         search: '',
-        rol: 'todos',
-        sede: 'todos',
-        activo: 'todos',
-        ordenNombre: 'asc'
+        rol: '',  // ← Cambiar de 'todos' a '' (string vacío)
+        estado: '',  // ← Agregar estado para activo/inactivo
+        ordenNombre: '',
+        ordenUsuario: '',
+        ordenFecha: 'desc',  // ← Agregar
+        filtroRapido: 'todos'  // ← Agregar
     });
 
     // Estados para paginación
@@ -112,27 +112,15 @@ export default function UsuariosTab() {
     const fetchUsuarios = async () => {
         setLoading(true);
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/admin/all`, {
-                credentials: 'include'
+            const response = await apiFetch(`/usuarios/admin/all`, {
             });
 
             if (!response.ok) throw new Error('Error al cargar usuarios');
-            const data = await response.json();
+            const result = await response.json();
 
             // Mapear los datos para asegurar la estructura correcta
-            const usuariosMapeados = data.data.map((u: any) => ({
-                id_usuario: u.id_usuario,
-                usuario: u.usuario,
-                nombre: u.nombre,
-                rol: u.rol,
-                id_sede: u.id_sede,
-                nombre_sede: u.nombre_sede,
-                activo: u.activo,
-                created_at: u.created_at,
-                updated_at: u.updated_at
-            }));
+            setUsuarios(result.data);
 
-            setUsuarios(usuariosMapeados);
         } catch (err) {
             mostrarError(err instanceof Error ? err.message : 'Error al cargar usuarios');
         } finally {
@@ -142,8 +130,7 @@ export default function UsuariosTab() {
 
     const fetchSedes = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/sedes/`, {
-                credentials: 'include'
+            const response = await apiFetch(`/sedes/`, {
             });
             if (!response.ok) throw new Error('Error al cargar sedes');
             const data = await response.json();
@@ -167,15 +154,18 @@ export default function UsuariosTab() {
     const handleLimpiarFiltros = () => {
         setFiltros({
             search: '',
-            rol: 'todos',
-            sede: 'todos',
-            activo: 'todos',
-            ordenNombre: 'asc'
+            rol: '',
+            estado: '',
+            ordenNombre: '',
+            ordenUsuario: '',
+            ordenFecha: 'desc',
+            filtroRapido: 'todos'
         });
         setCurrentPage(1);
         mostrarAdvertencia('Filtros limpiados');
     };
 
+    // Aplicar filtros a los datos
     // Aplicar filtros a los datos
     const datosFiltrados = useMemo(() => {
         let filtrados = [...usuarios];
@@ -188,18 +178,9 @@ export default function UsuariosTab() {
             );
         }
 
-        if (filtros.rol !== 'todos') {
+        // ✅ CORREGIDO: Solo filtrar si hay un rol seleccionado Y no es string vacío
+        if (filtros.rol && filtros.rol !== '') {
             filtrados = filtrados.filter(u => u.rol === filtros.rol);
-        }
-
-        if (filtros.sede !== 'todos' && filtros.sede) {
-            const sedeId = parseInt(filtros.sede);
-            filtrados = filtrados.filter(u => u.id_sede === sedeId);
-        }
-
-        if (filtros.activo !== 'todos') {
-            const activoValue = filtros.activo === 'activo' ? 1 : 0;
-            filtrados = filtrados.filter(u => u.activo === activoValue);
         }
 
         if (filtros.ordenNombre) {
@@ -233,7 +214,7 @@ export default function UsuariosTab() {
     };
 
     const validateForm = (creando: boolean = true): boolean => {
-        const errors: Partial<UsuarioFormData> = {};
+        const errors: Partial<Record<keyof UsuarioFormData, string>> = {};
 
         if (!formData.usuario || formData.usuario.trim() === '') {
             errors.usuario = 'El usuario es requerido';
@@ -251,7 +232,7 @@ export default function UsuariosTab() {
             errors.id_sede = 'La sede es requerida';
         }
 
-        setFormErrors(errors);
+        setFormErrors(errors as Partial<UsuarioFormData>);
         return Object.keys(errors).length === 0;
     };
 
@@ -292,9 +273,8 @@ export default function UsuariosTab() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/`, {
+            const response = await apiFetch(`/usuarios/`, {
                 method: 'POST',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
@@ -324,9 +304,8 @@ export default function UsuariosTab() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/${selectedUsuario.id_usuario}`, {
+            const response = await apiFetch(`/usuarios/${selectedUsuario.id_usuario}`, {
                 method: 'PUT',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData),
             });
@@ -356,9 +335,8 @@ export default function UsuariosTab() {
         if (!confirm) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/${id}`, {
+            const response = await apiFetch(`/usuarios/${id}`, {
                 method: 'DELETE',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
 
@@ -377,9 +355,8 @@ export default function UsuariosTab() {
 
     const handleActivateUsuario = async (id: number) => {
         try {
-            const response = await fetch(`${API_BASE_URL}/usuarios/${id}/activate`, {
+            const response = await apiFetch(`/usuarios/${id}/activate`, {
                 method: 'PATCH',
-                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
             });
 
@@ -450,8 +427,7 @@ export default function UsuariosTab() {
             {/* Filtros */}
             <FiltrosUsuarios
                 filtros={filtros}
-                totalItems={totalItems}
-                sedes={sedes}
+                totalUsuarios={totalItems}
                 onCambiarFiltro={handleCambiarFiltro}
                 onLimpiarFiltros={handleLimpiarFiltros}
             />
@@ -465,7 +441,7 @@ export default function UsuariosTab() {
                         </div>
                     ) : datosPaginados.length === 0 ? (
                         <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-                            {filtros.search || filtros.rol !== 'todos' || filtros.sede !== 'todos' || filtros.activo !== 'todos'
+                            {filtros.search || filtros.rol !== '' || filtros.estado !== '' || filtros.filtroRapido !== 'todos'
                                 ? 'No se encontraron resultados con los filtros aplicados'
                                 : 'No hay usuarios registrados'}
                         </div>

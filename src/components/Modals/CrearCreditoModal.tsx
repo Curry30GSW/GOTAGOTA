@@ -3,7 +3,7 @@ import { Modal } from '../ui/modal';
 import Button from '../ui/button/Button';
 import { InputGroup } from '../form/group-input';
 import { CreditoFormData } from '../../types/credito';
-import { formatMonto, parseMonto } from '../../utils/formatters'
+import { formatMonto } from '../../utils/formatters'
 
 interface CrearCreditoModalProps {
     isOpen: boolean;
@@ -16,6 +16,7 @@ interface CrearCreditoModalProps {
     clientes?: { id_cliente: number; nombre: string; apellidos: string; cedula: string; id_cobrador: number }[]; // Opcional
     cobradores?: { id_cobrador: number; nombre: string; apellidos: string }[]; // Opcional
     tasaInteres?: number;
+    calcularValorCuota?: (monto: number, cuotas: number) => number;
 }
 
 export default function CrearCreditoModal({
@@ -150,7 +151,7 @@ export default function CrearCreditoModal({
                     name: 'monto_prestado',
                     value: montoNumerico
                 }
-            } as React.ChangeEvent<HTMLInputElement>;
+            } as unknown as React.ChangeEvent<HTMLInputElement>;
 
             onChange(simulatedEvent);
         } else {
@@ -160,7 +161,7 @@ export default function CrearCreditoModal({
                     name: 'monto_prestado',
                     value: 0
                 }
-            } as React.ChangeEvent<HTMLInputElement>;
+            } as unknown as React.ChangeEvent<HTMLInputElement>;
 
             onChange(simulatedEvent);
         }
@@ -480,9 +481,7 @@ export default function CrearCreditoModal({
                             onChange={onChange}
                             required
                             placeholder="1"
-                            min="1"
-                            max="60"
-                            error={formErrors.numero_cuotas}
+                            error={formErrors.numero_cuotas?.toString()}
                         />
 
                         <InputGroup

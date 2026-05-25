@@ -1,4 +1,3 @@
-import React from 'react';
 import { Usuario } from '../../types/usuario';
 import { TrashBinIcon } from '../../icons';
 

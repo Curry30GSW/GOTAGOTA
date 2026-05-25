@@ -3,7 +3,7 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+const API_BASE_URL = 'https://api-integracion-movil.vercel.app/api';
 
 interface UserData {
   id: number;
@@ -42,45 +42,40 @@ export default function UserDropdown() {
 
   const handleLogout = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/logout`, {
+      // 1. Llamar al backend (opcional, solo para registrar)
+      await fetch(`${API_BASE_URL}/logout`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-        },
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       });
 
-      if (response.ok) {
-        // Limpiar localStorage
-        localStorage.removeItem('user');
+      // 2. Eliminar token y datos del localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
 
-        // Mostrar mensaje de éxito
-        Swal.fire({
-          icon: 'success',
-          title: 'Sesión cerrada',
-          text: 'Has cerrado sesión exitosamente',
-          timer: 2000,
-          showConfirmButton: false,
-          position: 'top-end',
-          toast: true
-        });
+      // 3. Mostrar mensaje de éxito
+      Swal.fire({
+        icon: 'success',
+        title: 'Sesión cerrada',
+        text: 'Has cerrado sesión exitosamente',
+        timer: 2000,
+        showConfirmButton: false,
+        position: 'top-end',
+        toast: true
+      });
 
-        // Redirigir al login
-        navigate('/signin');
-      } else {
-        throw new Error('Error al cerrar sesión');
-      }
+      // 4. Redirigir al login
+      navigate('/signin');
+
     } catch (error) {
       console.error('Error en logout:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo cerrar la sesión',
-        confirmButtonColor: '#ef4444'
-      });
+      // Aunque falle la petición, eliminamos el token local
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      navigate('/signin');
     }
   };
-
   // Función para obtener iniciales del nombre
   const getInitials = (nombre: string) => {
     return nombre

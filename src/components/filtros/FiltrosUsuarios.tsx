@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiltrosUsuarioState } from '../../types/usuario';
 
 interface Props {

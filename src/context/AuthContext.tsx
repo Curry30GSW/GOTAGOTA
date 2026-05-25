@@ -1,6 +1,6 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router';
-
+import { apiFetch } from '../components/utils/api';
 interface User {
     id: number;
     usuario: string;
@@ -18,7 +18,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
@@ -32,8 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const checkSession = async () => {
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/check-session`, {
-                credentials: 'include'
+            const response = await apiFetch(`/auth/check-session`, {
             });
 
             if (response.ok) {
@@ -50,12 +49,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const login = async (usuario: string, contraseña: string) => {
-        const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        const response = await apiFetch(`/auth/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            credentials: 'include',
             body: JSON.stringify({ usuario, contraseña })
         });
 
@@ -73,9 +71,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const logout = async () => {
         try {
-            await fetch(`${API_BASE_URL}/auth/logout`, {
-                method: 'POST',
-                credentials: 'include'
+            await apiFetch(`/auth/logout`, {
+                method: 'POST'
             });
         } catch (error) {
             console.error('Error al cerrar sesión:', error);

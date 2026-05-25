@@ -1,4 +1,3 @@
-import React from 'react';
 import { PencilIcon, TrashBinIcon } from '../../icons';
 import { Cobrador } from '../../types/cobrador';
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '../ui/modal';
 import Button from '../ui/button/Button';
 import Input from '../form/input/InputField';
@@ -63,8 +63,8 @@ export default function EditarUsuarioModal({
                         </p>
                         <div className="mt-2 flex items-center gap-2">
                             <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${usuario.activo === 1
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                    : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
                                 }`}>
                                 {usuario.activo === 1 ? 'Activo' : 'Inactivo'}
                             </span>
@@ -97,7 +97,7 @@ export default function EditarUsuarioModal({
                             onChange={onChange}
                             placeholder="Ej: jperez"
                             required
-                            error={formErrors.usuario}
+                            error={!!formErrors.usuario}
                             hint={formErrors.usuario}
                         />
                     </div>
@@ -126,7 +126,7 @@ export default function EditarUsuarioModal({
                                     onChange={onChange}
                                     placeholder="Nueva contraseña"
                                     required={cambiarPassword}
-                                    error={formErrors.contraseña}
+                                    error={!!formErrors.contraseña}
                                     hint={formErrors.contraseña}
                                 />
                                 <button
@@ -161,7 +161,7 @@ export default function EditarUsuarioModal({
                             onChange={onChange}
                             placeholder="Ej: Juan Pérez"
                             required
-                            error={formErrors.nombre}
+                            error={!!formErrors.nombre}
                             hint={formErrors.nombre}
                         />
                     </div>

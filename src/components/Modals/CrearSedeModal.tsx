@@ -61,7 +61,7 @@ export default function CrearSedeModal({
                             onChange={onChange}
                             placeholder="Ej: Sede Centro"
                             required
-                            error={formErrors.nombre_sede}
+                            error={!!formErrors.nombre_sede}
                             hint={formErrors.nombre_sede}
                         />
                     </div>
@@ -78,7 +78,7 @@ export default function CrearSedeModal({
                             onChange={onChange}
                             placeholder="Ej: Calle 123 #45-67"
                             required
-                            error={formErrors.direccion}
+                            error={!!formErrors.direccion}
                             hint={formErrors.direccion}
                         />
                     </div>
@@ -95,7 +95,7 @@ export default function CrearSedeModal({
                             onChange={onChange}
                             placeholder="Ej: 3001234567"
                             required
-                            error={formErrors.telefono}
+                            error={!!formErrors.telefono}
                             hint={formErrors.telefono}
                         />
                     </div>

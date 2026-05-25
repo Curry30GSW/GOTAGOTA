@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Modal } from '../../components/ui/modal';
 import Button from '../../components/ui/button/Button';
 import { Cobrador } from '../../types/cobrador';
@@ -127,8 +127,8 @@ export default function VerCobradorModal({
                         </div>
                         <div className="text-right">
                             <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium ${selectedCobrador.activo === 1
-                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                                    : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                                : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
                                 }`}>
                                 <StatusIcon activo={selectedCobrador.activo === 1} />
                                 {selectedCobrador.activo === 1 ? 'ACTIVO' : 'INACTIVO'}

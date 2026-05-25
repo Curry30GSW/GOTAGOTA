@@ -5,6 +5,7 @@ import { Table, TableBody, TableCell, TableHeader, TableRow } from '../../compon
 import Button from '../../components/ui/button/Button';
 import { PencilIcon, TrashBinIcon, PlusIcon } from '../../icons';
 import { Cliente, ClienteFormData, FiltrosClienteState } from '../../types/cliente';
+import { apiFetch } from '../../components/utils/api';
 
 // Importar componentes
 import CrearClienteModal from '../../components/Modals/CrearClienteModal';
@@ -15,7 +16,7 @@ import FiltrosClientes from '../../components/filtros/FiltrosClientes';
 import Paginacion from '../../components/Paginacion/Paginacion';
 import ClienteCard from '../../pages/Clientes/clienteCard';
 
-const API_BASE_URL = 'https://api-integracion-movil.vercel.app/';
+// const API_BASE_URL = 'https://api-integracion-movil.vercel.app/api';
 const ITEMS_PER_PAGE = 10;
 
 export default function Clientes() {
@@ -131,8 +132,7 @@ export default function Clientes() {
         setLoading(true);
         try {
 
-            const response = await fetch(`${API_BASE_URL}/clientes/`, {
-                credentials: "include"
+            const response = await apiFetch(`/clientes/`, {
             });
 
             if (!response.ok) throw new Error('Error al cargar clientes');
@@ -146,8 +146,8 @@ export default function Clientes() {
 
                         try {
 
-                            const cobradorRes = await fetch(`${API_BASE_URL}/cobradores/${cliente.id_cobrador}`, {
-                                credentials: "include"
+                            const cobradorRes = await apiFetch(`/cobradores/${cliente.id_cobrador}`, {
+                                // credentials: "include"
                             });
 
                             if (cobradorRes.ok) {
@@ -185,8 +185,8 @@ export default function Clientes() {
 
         try {
 
-            const response = await fetch(`${API_BASE_URL}/cobradores/`, {
-                credentials: "include"
+            const response = await apiFetch(`/cobradores/`, {
+                // credentials: "include"
             });
 
             if (!response.ok) throw new Error('Error al cargar cobradores');
@@ -359,9 +359,6 @@ export default function Clientes() {
         } else if (!/^\d+$/.test(formData.celular)) {
             errors.celular = 'El celular debe contener solo números';
         }
-        if (!formData.id_cobrador || formData.id_cobrador === 0) {
-            errors.id_cobrador = 'Debe seleccionar un cobrador';
-        }
 
         setFormErrors(errors);
 
@@ -421,9 +418,9 @@ export default function Clientes() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/`, {
+            const response = await apiFetch(`/clientes/`, {
                 method: 'POST',
-                credentials: "include",
+                // credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -453,9 +450,9 @@ export default function Clientes() {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/${selectedCliente.id_cliente}`, {
+            const response = await apiFetch(`/clientes/${selectedCliente.id_cliente}`, {
                 method: 'PUT',
-                credentials: "include",
+                // credentials: "include",
                 headers: {
                     "Content-Type": "application/json"
                 },
@@ -486,9 +483,9 @@ export default function Clientes() {
         if (!confirmado) return;
 
         try {
-            const response = await fetch(`${API_BASE_URL}/clientes/${selectedCliente.id_cliente}`, {
+            const response = await apiFetch(`/clientes/${selectedCliente.id_cliente}`, {
                 method: 'DELETE',
-                credentials: "include"
+                // credentials: "include"
             });
 
             const data = await response.json();
@@ -565,10 +562,10 @@ export default function Clientes() {
                             datosPaginados.map((cliente) => (
                                 <ClienteCard
                                     key={cliente.id_cliente}
-                                    cliente={cliente}
-                                    onVer={handleOpenViewModal}
-                                    onEditar={handleOpenEditModal}
-                                    onEliminar={handleOpenDeleteModal}
+                                    cliente={cliente as any}
+                                    onVer={handleOpenViewModal as any}
+                                    onEditar={handleOpenEditModal as any}
+                                    onEliminar={handleOpenDeleteModal as any}
                                     getNombreCobrador={getNombreCobrador}
                                 />
                             ))

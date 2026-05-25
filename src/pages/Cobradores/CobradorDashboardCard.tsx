@@ -1,4 +1,3 @@
-import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface CobradorDashboardCardProps {
@@ -31,8 +30,8 @@ export default function CobradorDashboardCard({ cobrador, formatCurrency }: Cobr
                     #{cobrador.id_cobrador}
                 </span>
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${cobrador.activo === 1
-                        ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-                        : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
+                    ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'
+                    : 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400'
                     }`}>
                     {cobrador.activo === 1 ? 'Activo' : 'Inactivo'}
                 </span>

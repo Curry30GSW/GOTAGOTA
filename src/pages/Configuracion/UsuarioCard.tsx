@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { PencilIcon, TrashBinIcon } from '../../icons';
 import { Usuario } from '../../types/usuario';
 

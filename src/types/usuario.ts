@@ -22,7 +22,9 @@ export interface UsuarioFormData {
 export interface FiltrosUsuarioState {
     search: string;
     rol: string;
-    sede: string;
-    activo: string;
+    estado: string;        // ← AGREGAR (para filtrar por activo/inactivo)
     ordenNombre: string;
+    ordenUsuario: string;
+    ordenFecha: string;    // ← AGREGAR
+    filtroRapido: string;  // ← AGREGAR
 }

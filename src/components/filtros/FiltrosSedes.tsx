@@ -1,4 +1,3 @@
-import React from 'react';
 import { FiltrosSedeState } from '../../types/sede';
 
 interface FiltrosSedesProps {

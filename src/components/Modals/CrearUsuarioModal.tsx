@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '../ui/modal';
 import Button from '../ui/button/Button';
 import Input from '../form/input/InputField';
@@ -71,7 +71,7 @@ export default function CrearUsuarioModal({
                             onChange={onChange}
                             placeholder="Ej: jperez"
                             required
-                            error={formErrors.usuario}
+                            error={!!formErrors.usuario}
                             hint={formErrors.usuario}
                         />
                     </div>
@@ -89,7 +89,7 @@ export default function CrearUsuarioModal({
                                 onChange={onChange}
                                 placeholder="Ingrese contraseña"
                                 required
-                                error={formErrors.contraseña}
+                                error={!!formErrors.contraseña}
                                 hint={formErrors.contraseña}
                             />
                             <button
@@ -126,7 +126,7 @@ export default function CrearUsuarioModal({
                             onChange={onChange}
                             placeholder="Ej: Juan Pérez"
                             required
-                            error={formErrors.nombre}
+                            error={!!formErrors.nombre}
                             hint={formErrors.nombre}
                         />
                     </div>

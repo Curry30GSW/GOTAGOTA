@@ -4,6 +4,7 @@ export interface Sede {
     direccion: string;
     telefono: string;
     created_at: string;
+    updated_at?: string; 
     activo: number;
 }
 
